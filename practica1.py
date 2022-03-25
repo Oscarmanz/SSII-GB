@@ -1,7 +1,11 @@
 import sqlite3
 import json
+
+import matplotlib.pyplot as plt
 import pandas as pd
 import random
+import matplotlib
+import numpy as np
 
 con = sqlite3.connect('example.db')
 cur = con.cursor()
@@ -159,4 +163,88 @@ print("El máximo de phishings con igual o más de 200 emails es:", end=" ")
 print(e_emailM200_3['phishing'].max())
 print("El máximo de phishings con igual o más de 200 emails es:", end=" ")
 print(e_emailM200_3['phishing'].min())
+
+# Ejercicio 4
+print("\n\n\nEJERCICIO 4\n")
+
+cont = pd.read_sql_query("SELECT contraseña FROM usuarios", con)
+cont_ponz = pd.DataFrame(columns=['cont'])
+cont_ponz.loc[0] = [cont['contraseña'][2]]
+cont_ponz.loc[1] = [cont['contraseña'][3]]
+cont_ponz.loc[2] = [cont['contraseña'][6]]
+cont_ponz.loc[3] = [cont['contraseña'][7]]
+cont_ponz.loc[4] = [cont['contraseña'][8]]
+cont_ponz.loc[5] = [cont['contraseña'][11]]
+cont_ponz.loc[6] = [cont['contraseña'][12]]
+cont_ponz.loc[7] = [cont['contraseña'][14]]
+cont_ponz.loc[8] = [cont['contraseña'][19]]
+cont_ponz.loc[9] = [cont['contraseña'][22]]
+cont_ponz.loc[10] = [cont['contraseña'][25]]
+cont_ponz.loc[11] = [cont['contraseña'][26]]
+cont_ponz.loc[12] = [cont['contraseña'][27]]
+cont_ponz.loc[13] = [cont['contraseña'][29]]
+
+usuarios_inseguros = pd.DataFrame(columns=['nombre', 'total', 'phishing'])
+for i in range(len(cont_ponz['cont'])):
+    cur.execute('SELECT nombre, total, phishing FROM usuarios u JOIN emails e ON u.emails = e.id WHERE contraseña = ?', [cont_ponz['cont'][i]])
+    usuarios_inseguros.loc[i] = cur.fetchone()
+
+usuarios_inseguros['prob_pincharSpam'] = round(usuarios_inseguros['phishing'] / usuarios_inseguros['total'], 4) * 100
+
+usuarios_inseguros = usuarios_inseguros.sort_values('prob_pincharSpam', ascending=False)
+usuarios_insegurosTop10 = usuarios_inseguros.head(10)
+
+#Grafico de barras usuarios mas criticos
+plt.bar(usuarios_insegurosTop10['nombre'], usuarios_insegurosTop10['prob_pincharSpam'], )
+plt.ylabel('% de pinchar en Spam')
+plt.xlabel('Usuarios')
+plt.ylim(0, 100)
+#plt.savefig('usuariosCriticos.png')
+plt.close()
+
+#Grafico barras paginas web con más políticas desactualizadas
+cur.execute('SELECT url, cookies, aviso, protección_de_datos FROM legal')
+aux = cur.fetchall()
+webs_inseg = pd.DataFrame(aux, columns=['url', 'cookies', 'aviso', 'proteccion'])
+webs_inseg['n_desact'] = webs_inseg['cookies'] + webs_inseg['aviso'] + webs_inseg['proteccion']
+webs_inseg = webs_inseg.sort_values('n_desact', ascending=True)
+webs_inseg = webs_inseg.head(5)
+#print(webs_inseg)
+
+numero_de_grupos = len(webs_inseg['n_desact'])
+indice_barras = np.arange(numero_de_grupos)
+ancho_barras =0.35
+
+plt.bar(indice_barras, webs_inseg['cookies'], width=ancho_barras, label='Cookies')
+plt.bar(indice_barras + ancho_barras, webs_inseg['aviso'], width=ancho_barras, label='Aviso')
+plt.bar(indice_barras + ancho_barras*2, webs_inseg['proteccion'], width=ancho_barras, label='Proteccion')
+plt.legend(loc='best')
+## Se colocan los indicadores en el eje x
+plt.xticks(indice_barras + ancho_barras, (webs_inseg['url']))
+#plt.savefig('websInseguras.png')
+plt.close()
+
+#Media de conexiones con contrasena vulnerable vs los que no
+cur.execute('SELECT nombre, COUNT(ip) FROM ips GROUP BY nombre')
+aux = cur.fetchall()
+media_conex = pd.DataFrame(aux, columns=['nombre', 'n_conex'])
+#print(media_conex)
+med_u_seg = pd.DataFrame(columns=['nombre', 'n_conex'])
+med_u_inseg = pd.DataFrame(columns=['nombre', 'n_conex'])
+for var in range(len(media_conex['nombre'])):
+    print(media_conex['nombre'][var])
+    if media_conex['nombre'][var] in usuarios_inseguros['nombre'].values:
+        print("Entre en inseguros")
+        med_u_inseg.loc[len(med_u_inseg['nombre'])] = media_conex['nombre'][var]
+        med_u_inseg['n_conex'][len(med_u_inseg['nombre'])] = media_conex['n_conex'][var]
+
+    else:
+        print("Entre en seguros")
+        print(media_conex['n_conex'][var])
+        med_u_seg.loc[len(med_u_seg['nombre'])] = media_conex['nombre'][var]
+        med_u_seg['n_conex'][len(med_u_seg['nombre'])] = media_conex['n_conex'][var]
+
+
+print(med_u_seg)
+print(med_u_inseg)
 con.close()
