@@ -63,35 +63,35 @@ con.commit()
 # Ejercicio 2
 print("\n\n\nEJERCICIO 2\n")
 n_usuarios = pd.read_sql_query("SELECT DISTINCT COUNT(*) FROM usuarios", con)
-print("El número de muestras es: ")
+print("El número de muestras es: ", end=" ")
 print(n_usuarios['COUNT(*)'][0])
 print("----------------------------------------")
 l_fechas = pd.read_sql_query("SELECT COUNT(fecha) FROM fechas GROUP BY nombre", con)
-print("La media de inicios de sesión es:")
+print("La media de inicios de sesión es:", end=" ")
 print(l_fechas['COUNT(fecha)'].mean())
-print("La desviación de inicios de sesión es:")
+print("La desviación de inicios de sesión es:", end=" ")
 print(l_fechas['COUNT(fecha)'].std())
 print("----------------------------------------")
 l_ips = pd.read_sql_query("SELECT COUNT(ip) FROM ips GROUP BY nombre", con)
-print("La media de ips por usuario es:")
+print("La media de ips por usuario es:", end=" ")
 print(l_ips['COUNT(ip)'].mean())
-print("La desviación de ips es:")
+print("La desviación de ips es:", end=" ")
 print(l_ips['COUNT(ip)'].std())
 print("----------------------------------------")
 l_mails = pd.read_sql_query("SELECT total FROM emails", con)
-print("La media de emails por usuarios es: ")
+print("La media de emails por usuarios es:", end=" ")
 print(l_mails['total'].mean())
-print("La desviación de emails es:")
+print("La desviación de emails es:", end=" ")
 print(l_mails['total'].std())
 print("----------------------------------------")
-print("El máximo número de inicios de sesión de un usuario es:")
+print("El máximo número de inicios de sesión de un usuario es:", end=" ")
 print(l_fechas['COUNT(fecha)'].max())
-print("El mínimo número de inicios de sesión de un usuario es:")
+print("El mínimo número de inicios de sesión de un usuario es:", end=" ")
 print(l_fechas['COUNT(fecha)'].min())
 print("----------------------------------------")
-print("El máximo número de emails recibidos es:")
+print("El máximo número de emails recibidos es:", end=" ")
 print(l_mails['total'].max())
-print("El mínimo número de emails recibidos es:")
+print("El mínimo número de emails recibidos es:", end=" ")
 print(l_mails['total'].min())
 
 # Ejercicio 3
@@ -161,7 +161,7 @@ print("El mínimo de phishings con menos de 200 emails es:", end=" ")
 print(e_emailm200_3['phishing'].min())
 print("El máximo de phishings con igual o más de 200 emails es:", end=" ")
 print(e_emailM200_3['phishing'].max())
-print("El máximo de phishings con igual o más de 200 emails es:", end=" ")
+print("El mínimo de phishings con igual o más de 200 emails es:", end=" ")
 print(e_emailM200_3['phishing'].min())
 
 # Ejercicio 4
@@ -195,11 +195,17 @@ usuarios_inseguros = usuarios_inseguros.sort_values('prob_pincharSpam', ascendin
 usuarios_insegurosTop10 = usuarios_inseguros.head(10)
 
 #Grafico de barras usuarios mas criticos
-plt.bar(usuarios_insegurosTop10['nombre'], usuarios_insegurosTop10['prob_pincharSpam'], )
+plt.bar(usuarios_insegurosTop10['nombre'], usuarios_insegurosTop10['prob_pincharSpam'])
 plt.ylabel('% de pinchar en Spam')
 plt.xlabel('Usuarios')
 plt.ylim(0, 100)
-#plt.savefig('usuariosCriticos.png')
+
+xlabels = usuarios_insegurosTop10['nombre']
+ax = plt.subplot(111)
+ax.set_xticklabels(xlabels, rotation=45)
+plt.savefig('usuariosCriticos.png', bbox_inches='tight', pad_inches=0.5)
+
+#plt.show()
 plt.close()
 
 #Grafico barras paginas web con más políticas desactualizadas
@@ -208,43 +214,107 @@ aux = cur.fetchall()
 webs_inseg = pd.DataFrame(aux, columns=['url', 'cookies', 'aviso', 'proteccion'])
 webs_inseg['n_desact'] = webs_inseg['cookies'] + webs_inseg['aviso'] + webs_inseg['proteccion']
 webs_inseg = webs_inseg.sort_values('n_desact', ascending=True)
-webs_inseg = webs_inseg.head(5)
-#print(webs_inseg)
+webs_insegTop5 = webs_inseg.head(5)
 
-numero_de_grupos = len(webs_inseg['n_desact'])
+numero_de_grupos = len(webs_insegTop5['n_desact'])
 indice_barras = np.arange(numero_de_grupos)
 ancho_barras =0.35
 
-plt.bar(indice_barras, webs_inseg['cookies'], width=ancho_barras, label='Cookies')
-plt.bar(indice_barras + ancho_barras, webs_inseg['aviso'], width=ancho_barras, label='Aviso')
-plt.bar(indice_barras + ancho_barras*2, webs_inseg['proteccion'], width=ancho_barras, label='Proteccion')
+plt.bar(indice_barras, webs_insegTop5['cookies'], width=ancho_barras, label='Cookies')
+plt.bar(indice_barras + ancho_barras, webs_insegTop5['aviso'], width=ancho_barras, label='Aviso')
+plt.bar(indice_barras + ancho_barras*2, webs_insegTop5['proteccion'], width=ancho_barras, label='Proteccion')
 plt.legend(loc='best')
-## Se colocan los indicadores en el eje x
-plt.xticks(indice_barras + ancho_barras, (webs_inseg['url']))
-#plt.savefig('websInseguras.png')
+#Colocamos los indicadores en el eje x
+plt.xticks(indice_barras + ancho_barras, (webs_insegTop5['url']))
+
+#xlabels = webs_insegTop5['url']
+#ax = plt.subplot(111)
+#ax.set_xticklabels(xlabels, rotation=45)
+plt.savefig('websInseguras.png', bbox_inches='tight', pad_inches=0.5)
+
+#plt.show()
 plt.close()
 
 #Media de conexiones con contrasena vulnerable vs los que no
 cur.execute('SELECT nombre, COUNT(ip) FROM ips GROUP BY nombre')
 aux = cur.fetchall()
 media_conex = pd.DataFrame(aux, columns=['nombre', 'n_conex'])
-#print(media_conex)
-med_u_seg = pd.DataFrame(columns=['nombre', 'n_conex'])
-med_u_inseg = pd.DataFrame(columns=['nombre', 'n_conex'])
+med_u_seg = 0
+contInseg = 0
+med_u_inseg = 0
+contSeg = 0
 for var in range(len(media_conex['nombre'])):
-    print(media_conex['nombre'][var])
     if media_conex['nombre'][var] in usuarios_inseguros['nombre'].values:
-        print("Entre en inseguros")
-        med_u_inseg.loc[len(med_u_inseg['nombre'])] = media_conex['nombre'][var]
-        med_u_inseg['n_conex'][len(med_u_inseg['nombre'])] = media_conex['n_conex'][var]
-
+        med_u_inseg = med_u_inseg + media_conex['n_conex'][var]
+        contInseg += 1
     else:
-        print("Entre en seguros")
-        print(media_conex['n_conex'][var])
-        med_u_seg.loc[len(med_u_seg['nombre'])] = media_conex['nombre'][var]
-        med_u_seg['n_conex'][len(med_u_seg['nombre'])] = media_conex['n_conex'][var]
+        med_u_seg = med_u_seg + media_conex['n_conex'][var]
+        contSeg += 1
 
-
+med_u_inseg = med_u_inseg/contInseg
+med_u_seg = med_u_seg/contSeg
+print("La media de conexiones de usuarios que tienen una contraseña segura es de :", end=" ")
 print(med_u_seg)
+print("La media de conexiones de usuarios que tienen una contraseña insegura es de :", end=" ")
 print(med_u_inseg)
+
+plt.bar(["Conex Usuarios Seguros", "Conex Usuarios Inseguros"], [med_u_seg,med_u_inseg])
+
+plt.savefig("u_segVSu_inseg.png")
+
+#plt.show()
+plt.close()
+
+#Segun año webs que cumplen politicas y las que no
+cur.execute('SELECT creacion, COUNT(url)  FROM legal WHERE (cookies+aviso+protección_de_datos = 3) GROUP BY creacion')
+aux = cur.fetchall()
+anosSeguros = pd.DataFrame(aux, columns=['ano', 'n_webs_seg'])
+
+cur.execute('SELECT creacion, COUNT(url)  FROM legal WHERE (cookies+aviso+protección_de_datos < 3) GROUP BY creacion')
+aux = cur.fetchall()
+anosInseguros = pd.DataFrame(aux, columns=['ano', 'n_webs_inseg'])
+
+anos = pd.merge(anosSeguros, anosInseguros, on='ano', how='outer')
+anos = anos.sort_values('ano', ascending=True)
+anos['n_webs_seg'] = anos['n_webs_seg'].fillna(0)
+anos['n_webs_inseg'] = anos['n_webs_inseg'].fillna(0)
+anos = anos.astype(int)
+
+numero_de_grupos = len(anos['ano'])
+indice_barras = np.arange(numero_de_grupos)
+ancho_barras =0.40
+
+plt.bar(indice_barras, anos['n_webs_seg'], width=ancho_barras, label='Nº webs seguras')
+plt.bar(indice_barras + ancho_barras, anos['n_webs_inseg'], width=ancho_barras, label='Nº webs inseguras')
+plt.legend(loc='best')
+#Colocamos los indicadores en el eje x
+plt.xticks(indice_barras + ancho_barras, (anos['ano']))
+
+xlabels = anos['ano']
+#ax = plt.subplot(111)
+#plt.FixedLocator(0.5)
+#ax.set_xticklabels(xlabels, rotation=45)
+
+plt.savefig('websSegeInsegPorAnos.png')
+
+#plt.show()
+plt.close()
+
+
+#Contraseñas inseguras vs seguras
+n_cont_comprometidas = len(cont_ponz)
+cur.execute('SELECT contraseña  FROM usuarios')
+aux = cur.fetchall()
+aux = pd.DataFrame(aux, columns=['cont'])
+n_cont_NO_comprometidas = len(aux['cont'])
+
+porcComp = n_cont_comprometidas/n_cont_NO_comprometidas
+porcNoComp = 1 - porcComp
+
+plt.pie([porcComp, porcNoComp], labels=["Comprometidas", "No comprometidas"], autopct="%0.1f %%")
+plt.title("Contraseñas comprometidas VS No comprometidas")
+plt.savefig("compVSnocomp.png")
+plt.close()
+
+#FIN
 con.close()
