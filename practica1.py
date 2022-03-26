@@ -26,7 +26,7 @@ for element in range(len(data['legal'])):
         aviso = data['legal'][element][web]['aviso']
         proteccion = data['legal'][element][web]['proteccion_de_datos']
         creacion = data['legal'][element][web]['creacion']
-        #cur.execute('INSERT INTO legal VALUES (?, ?, ?, ?, ?)', (url, cookies, aviso, proteccion, creacion))
+        cur.execute('INSERT INTO legal VALUES (?, ?, ?, ?, ?)', (url, cookies, aviso, proteccion, creacion))
 
 con.commit()
 
@@ -48,13 +48,13 @@ for element in range(len(data['usuarios'])):
         phising = email['phishing']
         clicados = email['cliclados']
         id = random.randint(1, 9999)
-        #cur.execute('INSERT INTO emails VALUES (?, ?, ?, ?)', (id, total, phising, clicados))
-        #for fecha in fechas:
-            #cur.execute('INSERT INTO fechas VALUES (?, ?, ?)', (id_fecha, usuario, fecha))
-            #id_fecha = id_fecha + 1
-        #for ip in ips:
-            #cur.execute('INSERT INTO ips VALUES (?, ?)', (ip, usuario))
-        #cur.execute('INSERT INTO usuarios VALUES (?, ?, ?, ?, ?, ?)', (usuario, telefono, passwd, provincia, permisos, id))
+        cur.execute('INSERT INTO emails VALUES (?, ?, ?, ?)', (id, total, phising, clicados))
+        for fecha in fechas:
+            cur.execute('INSERT INTO fechas VALUES (?, ?, ?)', (id_fecha, usuario, fecha))
+            id_fecha = id_fecha + 1
+        for ip in ips:
+            cur.execute('INSERT INTO ips VALUES (?, ?)', (ip, usuario))
+        cur.execute('INSERT INTO usuarios VALUES (?, ?, ?, ?, ?, ?)', (usuario, telefono, passwd, provincia, permisos, id))
 
 con.commit()
 
@@ -227,9 +227,9 @@ plt.legend(loc='best')
 #Colocamos los indicadores en el eje x
 plt.xticks(indice_barras + ancho_barras, (webs_insegTop5['url']))
 
-#xlabels = webs_insegTop5['url']
-#ax = plt.subplot(111)
-#ax.set_xticklabels(xlabels, rotation=45)
+xlabels = webs_insegTop5['url']
+ax = plt.subplot(111)
+ax.set_xticklabels(xlabels, rotation=45)
 plt.savefig('websInseguras.png', bbox_inches='tight', pad_inches=0.5)
 
 #plt.show()
@@ -291,9 +291,9 @@ plt.legend(loc='best')
 plt.xticks(indice_barras + ancho_barras, (anos['ano']))
 
 xlabels = anos['ano']
-#ax = plt.subplot(111)
-#plt.FixedLocator(0.5)
-#ax.set_xticklabels(xlabels, rotation=45)
+ax = plt.subplot(111)
+plt.FixedLocator(0.5)
+ax.set_xticklabels(xlabels, rotation=45)
 
 plt.savefig('websSegeInsegPorAnos.png')
 
