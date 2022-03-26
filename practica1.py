@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import warnings
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -7,7 +8,9 @@ import random
 import matplotlib
 import numpy as np
 
-con = sqlite3.connect('example.db')
+warnings.simplefilter(action='ignore', category=UserWarning)
+
+con = sqlite3.connect('bdSqlLite.db')
 cur = con.cursor()
 cur.execute('CREATE TABLE IF NOT EXISTS legal (url text, cookies integer, aviso integer, protección_de_datos integer, creacion integer, primary key (url))')
 cur.execute('CREATE TABLE IF NOT EXISTS emails (id integer, total integer, phishing integer, cliclados integer, primary key (id))')
@@ -318,3 +321,4 @@ plt.close()
 
 #FIN
 con.close()
+
