@@ -1,4 +1,5 @@
 import sqlite3
+from os import remove
 
 import pandas as pd
 from flask import Flask
@@ -32,15 +33,24 @@ def return_vuln():
    #Para acceder a un dato concreto data[elemento]['campo'] -> data[0]['Modified']
    #Lo parseamos para que se vea en una tabla
    scan0utput = json2html.convert(json=data)
-   htmlReportFile = "templates/top10vuln.html"
-   with open(htmlReportFile, 'w') as htmlfile:
-      htmlfile.write(str(scan0utput))
    #Devolvemos la tabla
-   return render_template('top10vuln.html')
-@app.route('/opcional')
-def opcional():
-   return render_template('opcional.html')
+   return render_template('top10vuln.html', text=scan0utput)
 
+@app.route('/opcional', methods=["GET", "POST"])
+def opcional():
+   dominio = request.form['url']
+   dominio_total = "https://urlscan.io/api/v1/search/?q=domain:" + dominio
+   print(dominio_total)
+   url = requests.get(dominio_total)
+   text = url.text
+   data = json.loads(text)
+   scan0utput = json2html.convert(json=data)
+   return render_template('opcional.html', text=scan0utput)
+
+
+@app.route('/infoUrl')
+def infoUrl():
+   return render_template('infoUrl.html')
 
 if __name__ == '__main__':
    app.run(debug = True)
