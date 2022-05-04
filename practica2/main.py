@@ -128,16 +128,3 @@ def webs_criticas():
    graphJSON = json.dumps(fig, cls=a)
    con.close()
    return render_template('pagsVul.html', graphJSON=graphJSON)
-
-
-
-
-#@app.route('/hello/')
-#@app.route('/hello/<name>')
-#def hello(name=None):
-#   return render_template('topUsersCrit.html', name=name, graphJSON = None)
-
-#@app.route('/login')
-#def login():
-#   name = request.args.get('user')
-#   return render_template('topUsersCrit.html', name=name, graphJSON = None)
