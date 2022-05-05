@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Top usuarios críticos</title>
+    <link href="/static/styles.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Rock+Salt' rel='stylesheet' type='text/css'>
+</head>
+<body>
+    <h1 class="box" style="font-size: xx-large; background: darkslategrey"> Top usuarios más críticos</h1>
+    <h4>Elija un número y una opción para mostrar el gráfico</h4>
+<form action="/critUsers" method="POST">
+        <label for="numero">Numero: </label>
+        <input type="number" id="numero" name="numero">
+        <label>
+            <select name="opcion">
+                <option>...</option>
+                <option>Menos del 50% de spam clicado</option>
+                <option>Más del 50% de spam clicado</option>
+            </select>
+        </label>
+        <input class="minibutton" type="submit" value="Enviar" style="background-color: deepskyblue">
+    </form>
+
+    <br><br>
+{% if graphJSON %}
+  <div id='chart' class='chart'”></div>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script type='text/javascript'>
+      var graphs = {{graphJSON | safe}};
+      Plotly.plot('chart',graphs,{});
+    </script>
+{% endif %}
+    <br>
+<a class="button" href="/" style="background-color: deepskyblue">Volver</a>
+</body>
+</html>
+
+
